@@ -5,9 +5,10 @@ Module xử lý việc xác thực API Key.
 from fastapi import Security, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 
-from app.config import AGENT_API_KEY, API_KEY_NAME
+from app.config import AGENT_API_KEY
 
-# Tạo một instance của APIKeyHeader, yêu cầu key phải có trong header
+# Định nghĩa tên của header chứa API key.
+API_KEY_NAME = "X-API-Key"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 async def get_api_key(x_api_key: str = Security(api_key_header)):

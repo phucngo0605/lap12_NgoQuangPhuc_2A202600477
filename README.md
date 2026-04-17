@@ -1,85 +1,113 @@
-# Lab 12: API Gateway - Production Readiness
+# Day 12 — Deployment: Đưa Agent Lên Cloud
 
-Dự án này triển khai một API Gateway hoàn chỉnh, sẵn sàng cho môi trường production, đóng vai trò là cổng vào cho một dịch vụ AI.
+> **AICB-P1 · VinUniversity 2026**  
+> Repository thực hành đi kèm bài giảng Day 12.  
+> Mỗi phần có ví dụ **cơ bản** (hiểu concept) và **chuyên sâu** (production-ready).
 
-## Các tính năng chính
+---
 
-- **Xác thực qua API Key**: Bảo vệ endpoint, chỉ những ai có key hợp lệ mới được truy cập.
-- **Giám sát chi phí (Cost Guard)**: Theo dõi và giới hạn chi phí sử dụng dịch vụ AI, tránh vượt ngân sách.
-- **Giới hạn tần suất (Rate Limiting)**: Chống lạm dụng API và tấn công DoS.
-- **Bộ nhớ đệm (Caching)**: Giảm chi phí và cải thiện tốc độ phản hồi cho các câu hỏi lặp lại.
-- **Kiểm tra "sức khỏe" (Health Check)**: Cung cấp endpoint `/health` để các hệ thống giám sát có thể kiểm tra trạng thái dịch vụ.
-- **Kiến trúc Stateless**: Sử dụng Redis làm nơi lưu trữ trạng thái chung, cho phép mở rộng theo chiều ngang (horizontal scaling) một cách dễ dàng.
-- **Container hóa**: Toàn bộ ứng dụng được đóng gói bằng Docker và Docker Compose để triển khai đồng nhất và dễ dàng.
+## Cấu Trúc Project
 
-## Công nghệ sử dụng
-
-- **FastAPI**: Framework web hiệu năng cao của Python.
-- **Redis**: Datastore trong bộ nhớ, được sử dụng cho Caching, Rate Limiting, và Cost Guard.
-- **Docker & Docker Compose**: Dành cho việc container hóa và điều phối các dịch vụ.
-- **Gunicorn**: Production-grade WSGI server để chạy ứng dụng FastAPI.
-
-## Hướng dẫn cài đặt và chạy dự án
-
-### Yêu cầu
-
-- Đã cài đặt Docker
-- Đã cài đặt Docker Compose
-
-### Các bước thực hiện
-
-1.  **Tải mã nguồn về:**
-    ```bash
-    git clone <repository-url>
-    cd <repository-folder>
-    ```
-
-2.  **Tạo file biến môi trường:**
-    - Sao chép file `.env.example` thành một file mới tên là `.env`.
-      ```bash
-      # Trên Windows (Command Prompt)
-      copy .env.example .env
-      ```
-    - Mở file `.env` và điền các giá trị API key thật của bạn:
-      ```ini
-      # API Gateway Security Key
-      API_KEY="your-strong-api-key"
-
-      # OpenAI API Key
-      OPENAI_API_KEY="sk-your-openai-key"
-      ```
-
-3.  **Khởi chạy ứng dụng:**
-    - Sử dụng Docker Compose để build và chạy các dịch vụ ở chế độ nền.
-      ```bash
-      docker-compose up --build -d
-      ```
-    - API Gateway sẽ chạy và có thể truy cập tại `http://localhost:8001`.
-
-4.  **Kiểm tra các dịch vụ:**
-    - Kiểm tra xem các container đã chạy thành công hay chưa:
-      ```bash
-      docker-compose ps
-      ```
-    - Bạn sẽ thấy 2 dịch vụ là `api-gateway` và `redis` đều đang ở trạng thái `running`.
-
-## Cách sử dụng
-
-Gửi một request POST đến endpoint `/ask` với API key và câu hỏi của bạn.
-
-```bash
-curl -X POST "http://localhost:8001/ask" \
--H "Content-Type: application/json" \
--H "X-API-Key: your-strong-api-key" \
--d '{"question": "What is Docker?"}'
+```
+day12_ha-tang-cloud_va_deployment/
+├── 01-localhost-vs-production/     # Section 1: Dev ≠ Production
+│   ├── develop/                      #   Agent "đúng kiểu localhost"
+│   └── production/                   #   12-Factor compliant agent
+│
+├── 02-docker/                      # Section 2: Containerization
+│   ├── develop/                      #   Dockerfile đơn giản
+│   └── production/                   #   Multi-stage + Docker Compose stack
+│
+├── 03-cloud-deployment/            # Section 3: Cloud Options
+│   ├── railway/                    #   Deploy Railway (< 5 phút)
+│   ├── render/                     #   Deploy Render + render.yaml
+│   └── production-cloud-run/         #   GCP Cloud Run + CI/CD
+│
+├── 04-api-gateway/                 # Section 4: Security
+│   ├── develop/                      #   API Key authentication
+│   └── production/                   #   JWT + Rate Limiting + Cost Guard
+│
+├── 05-scaling-reliability/         # Section 5: Scale & Reliability
+│   ├── develop/                      #   Health check + graceful shutdown
+│   └── production/                   #   Stateless + Redis + Nginx LB
+│
+├── 06-lab-complete/                # Lab 12: Production-ready agent
+│   └── (full project kết hợp tất cả)
+│
+└── utils/                          # Mock LLM dùng chung (không cần API key)
 ```
 
-## Dừng ứng dụng
+---
 
-Để dừng tất cả các dịch vụ, chạy lệnh:
+## 🚀 Bắt Đầu Nhanh
+
+**Muốn thử ngay?** → [QUICK_START.md](QUICK_START.md) (5 phút)
+
+**Muốn học kỹ?** → [CODE_LAB.md](CODE_LAB.md) (3-4 giờ)
+
+## Cách Học
+
+| Bước | Làm gì |
+|------|--------|
+| 0 | **[Khuyến nghị]** Đọc [QUICK_START.md](QUICK_START.md) để thử nhanh |
+| 1 | Đọc [CODE_LAB.md](CODE_LAB.md) để hiểu chi tiết |
+| 2 | Chạy ví dụ **basic** trước — hiểu concept |
+| 3 | So sánh với ví dụ **advanced** — thấy sự khác biệt |
+| 4 | Tự làm Lab 06 từ đầu trước khi xem solution |
+| 5 | Tham khảo [QUICK_REFERENCE.md](QUICK_REFERENCE.md) khi cần |
+| 6 | Xem [TROUBLESHOOTING.md](TROUBLESHOOTING.md) khi gặp lỗi |
+
+---
+
+## Yêu Cầu
+
 ```bash
-docker-compose down
+python 3.11+
+docker & docker compose
 ```
-````
 
+<<<<<<< HEAD
 Sau khi bạn tạo xong 2 file này, chúng ta chỉ còn một file cuối cùng là `DEPLOYMENT.md`
+=======
+Mỗi folder có `requirements.txt` riêng. Không cần API key thật — các ví dụ dùng **mock LLM** để chạy offline.
+
+---
+
+## Sections
+
+| # | Folder | Concept chính |
+|---|--------|--------------|
+| 1 | `01-localhost-vs-production` | Dev/prod gap, 12-factor, secrets |
+| 2 | `02-docker` | Dockerfile, multi-stage, docker-compose |
+| 3 | `03-cloud-deployment` | Railway, Render, Cloud Run |
+| 4 | `04-api-gateway` | Auth, rate limiting, cost protection |
+| 5 | `05-scaling-reliability` | Health check, stateless, rolling deploy |
+| 6 | `06-lab-complete` | **Full production agent** |
+
+---
+
+## 📚 Lab Materials
+
+Chúng tôi đã chuẩn bị đầy đủ tài liệu hướng dẫn:
+
+### Cho Sinh Viên
+
+| Tài liệu | Mô tả | Thời gian |
+|----------|-------|-----------|
+| **[CODE_LAB.md](CODE_LAB.md)** | Hướng dẫn lab chi tiết từng bước | 3-4 giờ |
+| **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** | Cheat sheet các lệnh và patterns | Tra cứu |
+| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Giải quyết lỗi thường gặp | Khi cần |
+
+### Cho Giảng Viên
+
+| Tài liệu | Mô tả |
+|----------|-------|
+| **[INSTRUCTOR_GUIDE.md](INSTRUCTOR_GUIDE.md)** | Hướng dẫn chấm điểm và đánh giá |
+
+### Cách Sử Dụng
+
+1. **Trước lab:** Đọc [CODE_LAB.md](CODE_LAB.md) để hiểu tổng quan
+2. **Trong lab:** Làm theo từng Part, tham khảo [QUICK_REFERENCE.md](QUICK_REFERENCE.md)
+3. **Gặp lỗi:** Xem [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+4. **Sau lab:** Nộp Part 6 Final Project để chấm điểm
+>>>>>>> parent of d39e7df (lap12)
