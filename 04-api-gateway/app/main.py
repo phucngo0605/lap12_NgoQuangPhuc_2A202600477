@@ -22,6 +22,7 @@ from app.caching import get_from_cache, save_to_cache
 from utils.mock_llm import ask
 
 # --- Khởi tạo FastAPI ---
+# Force redeploy v1
 app = FastAPI(title="Production-Ready API Gateway")
 
 # --- Định nghĩa Model cho Request Body ---
