@@ -17,7 +17,7 @@ COST_FILE = os.path.join(PROJECT_ROOT, "cost.json")
 BUDGET = 10.0  # USD
 
 # === Redis Settings ===
-REDIS_HOST = "localhost"
+REDIS_HOST = "redis"
 REDIS_PORT = 6379
 
 # === Rate Limiting Settings ===

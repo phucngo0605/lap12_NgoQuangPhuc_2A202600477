@@ -32,7 +32,45 @@ async def ask_agent(request: QuestionRequest):
     return JSONResponse(content={"answer": answer}, media_type="application/json; charset=utf-8")
 
 
-@app.get("/health")
+@app.get("/health")# ============================================================
+# Dockerfile ở thư mục gốc - Tương thích với Railway
+# ============================================================
+
+# Bước 1: Chọn base image
+FROM python:3.11
+
+# Install locale support and configure UTF-8
+RUN apt-get update && apt-get install -y locales && \
+    sed -i '/vi_VN.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen vi_VN.UTF-8
+
+# Bước 2: Đặt working directory trong container
+WORKDIR /app
+
+# Set UTF-8 environment để tránh lỗi font tiếng Việt
+ENV PYTHONIOENCODING=utf-8
+ENV LANG=vi_VN.UTF-8
+ENV LC_ALL=vi_VN.UTF-8
+ENV PYTHONUTF8=1
+
+# Bước 3: Copy requirements TRƯỚC (từ thư mục con)
+COPY 02-docker/develop/requirements.txt .
+
+# Bước 4: Cài dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Bước 5: Copy code vào container
+# Copy app.py và thư mục utils
+COPY 02-docker/develop/app.py .
+COPY utils ./utils
+
+# Bước 6: Expose port
+EXPOSE 8000
+
+# Bước 7: Command mặc định khi container start
+# Chạy app.py từ thư mục /app
+CMD ["python", "app.py"]
+
 def health():
     return {
         "status": "ok",

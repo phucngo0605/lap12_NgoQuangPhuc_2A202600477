@@ -7,4 +7,4 @@ builder = "DOCKERFILE"
 
 # Chỉ định đường dẫn đến Dockerfile của bạn.
 # Đường dẫn này được tính từ thư mục gốc của dự án.
-dockerfilePath = "02-docker/develop/Dockerfile"
+dockerfilePath = "Dockerfile.prod"

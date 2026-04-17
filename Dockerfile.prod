@@ -36,10 +36,11 @@ COPY --from=builder /wheels /wheels
 # Cài đặt từ các file wheel đã có, không cần download lại
 RUN pip install --no-cache /wheels/*
 
-# Copy code ứng dụng
-COPY 02-docker/develop/app.py .
-COPY utils ./utils
+# Copy code ứng dụng từ thư mục 04-api-gateway
+COPY ./04-api-gateway/app /app
+# Copy thư mục utils vào trong image
+COPY ./utils /app/utils
 
-# Expose port và chạy ứng dụng
+# Expose port và chạy ứng dụng với Gunicorn
 EXPOSE 8000
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app", "-b", "0.0.0.0:8000"]

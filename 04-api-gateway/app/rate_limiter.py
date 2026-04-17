@@ -5,7 +5,6 @@ Module xử lý việc giới hạn tần suất truy cập (Rate Limiting) bằ
 import time
 from fastapi import HTTPException
 
-from app.config import RATE_LIMIT_REQUESTS, RATE_LIMIT_PERIOD_SECONDS
 from app.redis_client import redis_client
 
 async def rate_limiter(key: str = "static_key"):

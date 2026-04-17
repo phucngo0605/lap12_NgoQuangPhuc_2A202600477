@@ -1,0 +1,28 @@
+services:
+  # Dịch vụ API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8001:8000" # Map cổng 8001 của máy host vào cổng 8000 của container
+    env_file:
+      - ./.env # Sử dụng các biến môi trường từ file .env
+    depends_on:
+      - redis # Khởi động sau khi dịch vụ redis đã sẵn sàng
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Dịch vụ Redis
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

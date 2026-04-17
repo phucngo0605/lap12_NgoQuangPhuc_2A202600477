@@ -1,2 +1,8 @@
-fastapi==0.115.0
+fastapi
+uvicorn
+python-dotenv
+openai
+redis
+gunicorn
 uvicorn[standard]==0.30.0
+gunicorn
