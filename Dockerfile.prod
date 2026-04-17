@@ -1,0 +1,45 @@
+# ============================================================
+# PRODUCTION Dockerfile — Multi-stage build để tối ưu size
+# ============================================================
+
+# --- STAGE 1: Builder ---
+# Dùng image đầy đủ để build dependencies, đặt tên là "builder"
+FROM python:3.11 AS builder
+
+# Cài đặt các gói cần thiết cho việc build và UTF-8
+RUN apt-get update && apt-get install -y locales && \
+    sed -i '/vi_VN.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen vi_VN.UTF-8
+
+WORKDIR /app
+
+# Cài đặt thư viện vào một thư mục tạm
+RUN pip install --upgrade pip
+COPY 02-docker/develop/requirements.txt .
+RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+
+
+# --- STAGE 2: Final ---
+# Dùng image "slim" siêu nhẹ cho môi trường production
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Set UTF-8 environment để tránh lỗi font tiếng Việt
+ENV PYTHONIOENCODING=utf-8
+ENV LANG=vi_VN.UTF-8
+ENV LC_ALL=vi_VN.UTF-8
+ENV PYTHONUTF8=1
+
+# Copy dependencies đã được build sẵn từ stage "builder"
+COPY --from=builder /wheels /wheels
+# Cài đặt từ các file wheel đã có, không cần download lại
+RUN pip install --no-cache /wheels/*
+
+# Copy code ứng dụng
+COPY 02-docker/develop/app.py .
+COPY utils ./utils
+
+# Expose port và chạy ứng dụng
+EXPOSE 8000
+CMD ["python", "app.py"]

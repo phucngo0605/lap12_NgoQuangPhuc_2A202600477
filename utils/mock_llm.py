@@ -1,43 +1,30 @@
+# -*- coding: utf-8 -*-
 """
-Mock LLM — dùng chung cho tất cả ví dụ.
-Không cần API key thật. Trả lời giả lập để focus vào deployment concept.
+OpenAI LLM — dùng API key thật để gọi OpenAI GPT-4.
 """
-import time
-import random
+import os
+from openai import OpenAI
 
+# Khởi tạo OpenAI client với API key từ environment
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-MOCK_RESPONSES = {
-    "default": [
-        "Đây là câu trả lời từ AI agent (mock). Trong production, đây sẽ là response từ OpenAI/Anthropic.",
-        "Agent đang hoạt động tốt! (mock response) Hỏi thêm câu hỏi đi nhé.",
-        "Tôi là AI agent được deploy lên cloud. Câu hỏi của bạn đã được nhận.",
-    ],
-    "docker": ["Container là cách đóng gói app để chạy ở mọi nơi. Build once, run anywhere!"],
-    "deploy": ["Deployment là quá trình đưa code từ máy bạn lên server để người khác dùng được."],
-    "health": ["Agent đang hoạt động bình thường. All systems operational."],
-}
-
-
-def ask(question: str, delay: float = 0.1) -> str:
+def ask(question: str) -> str:
     """
-    Mock LLM call với delay giả lập latency thật.
+    Gọi OpenAI API thật để lấy câu trả lời từ GPT-4.
     """
-    time.sleep(delay + random.uniform(0, 0.05))  # simulate API latency
-
-    question_lower = question.lower()
-    for keyword, responses in MOCK_RESPONSES.items():
-        if keyword in question_lower:
-            return random.choice(responses)
-
-    return random.choice(MOCK_RESPONSES["default"])
-
-
-def ask_stream(question: str):
-    """
-    Mock streaming response — yield từng token.
-    """
-    response = ask(question)
-    words = response.split()
-    for word in words:
-        time.sleep(0.05)
-        yield word + " "
+    if not os.getenv("OPENAI_API_KEY"):
+        return "Lỗi: Thiếu OPENAI_API_KEY. Vui lòng set environment variable."
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Bạn là một trợ lý AI thông minh và hữu ích. Hãy trả lời câu hỏi của người dùng một cách chi tiết và chính xác."},
+                {"role": "user", "content": question}
+            ],
+            max_tokens=200,
+            temperature=0.3
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Lỗi khi gọi OpenAI API: {str(e)}"
